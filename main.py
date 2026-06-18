@@ -25,29 +25,61 @@ def load_state():
 
 app = Flask(__name__)
 
-# --- ১৬টি প্যাটার্ন ডিটেক্টর (বাংলা নাম ও ইমোজি এনটিটি সহ) ---
+# --- ১৭টি অ্যাডভান্সড প্যাটার্ন ডিটেক্টর (বাংলা নাম ও ইমোজি সহ) ---
 def get_advanced_pats(df):
     p = []
     if len(df) < 5: return p
+    
+    # শেষ ৩টি ক্যান্ডেলের ডাটা
     c1, c2, c3 = df.iloc[-1], df.iloc[-2], df.iloc[-3]
+    
     def info(c):
-        body = abs(c['c']-c['o'])
-        total = max(0.001, c['h']-c['l'])
-        u_wick, l_wick = c['h']-max(c['c'],c['o']), min(c['c'],c['o'])-c['l']
-        return body, total, u_wick, l_wick, c['c']>c['o']
+        body = abs(c['c'] - c['o'])
+        total = max(0.001, c['h'] - c['l'])
+        u_wick = c['h'] - max(c['c'], c['o'])
+        l_wick = min(c['c'], c['o']) - c['l']
+        is_green = c['c'] > c['o']
+        return body, total, u_wick, l_wick, is_green
+
     b1, t1, u1, l1, g1 = info(c1)
     b2, t2, u2, l2, g2 = info(c2)
     b3, t3, u3, l3, g3 = info(c3)
 
-    if b1 > 0 and l1 >= 2*b1 and u1 <= 0.2*b1: p.append({"n": "হ্যামার &#128296;", "t": "bull"})
-    if b1 > 0 and u1 >= 2*b1 and l1 <= 0.2*b1: p.append({"n": "ইনভার্টেড হ্যামার &#128296;", "t": "bull"})
+    # ১. হ্যামার (Hammer)
+    if b1 > 0 and l1 >= 2 * b1 and u1 <= 0.2 * b1: p.append({"n": "হ্যামার &#128296;", "t": "bull"})
+    # ২. ইনভার্টেড হ্যামার (Inverted Hammer)
+    if b1 > 0 and u1 >= 2 * b1 and l1 <= 0.2 * b1: p.append({"n": "ইনভার্টেড হ্যামার &#128296;", "t": "bull"})
+    # ৩. বুলিশ এনগালফিং (Bullish Engulfing)
     if not g2 and g1 and c1['c'] >= c2['o'] and c1['o'] <= c2['c']: p.append({"n": "বুলিশ এনগালফিং &#128200;", "t": "bull"})
-    if b1/t1 > 0.85 and g1: p.append({"n": "মারুবোজু &#128170;", "t": "bull"})
-    if not g3 and b2 < (b3*0.3) and g1 and c1['c'] > (c3['o']+c3['c'])/2: p.append({"n": "মর্নিং স্টার &#127749;", "t": "bull"})
-    if b1 > 0 and u1 >= 2*b1 and l1 <= 0.2*b1: p.append({"n": "শুটিং স্টার &#9732;", "t": "bear"})
+    # ৪. বেয়ারিশ এনগালফিং (Bearish Engulfing)
     if g2 and not g1 and c1['c'] <= c2['o'] and c1['o'] >= c2['c']: p.append({"n": "বেয়ারিশ এনগালফিং &#128201;", "t": "bear"})
-    if b1 <= (t1*0.1): p.append({"n": "ডোজি &#9878;", "t": "neut"})
-    if b1 < (t1*0.3) and u1 > b1 and l1 > b1: p.append({"n": "স্পিনিং টপ &#129352;", "t": "neut"})
+    # ৫. বুলিশ মারুবোজু (Bullish Marubozu)
+    if b1 / t1 > 0.9 and g1: p.append({"n": "বুলিশ মারুবোজু &#128170;", "t": "bull"})
+    # ৬. বেয়ারিশ মারুবোজু (Bearish Marubozu)
+    if b1 / t1 > 0.9 and not g1: p.append({"n": "বেয়ারিশ মারুবোজু &#128308;", "t": "bear"})
+    # ৭. মর্নিং স্টার (Morning Star)
+    if not g3 and b2 < (b3 * 0.3) and g1 and c1['c'] > (c3['o'] + c3['c']) / 2: p.append({"n": "মর্নিং স্টার &#127749;", "t": "bull"})
+    # ৮. ইভনিং স্টার (Evening Star)
+    if g3 and b2 < (b3 * 0.3) and not g1 and c1['c'] < (c3['o'] + c3['c']) / 2: p.append({"n": "ইভনিং স্টার &#127751;", "t": "bear"})
+    # ৯. শুটিং স্টার (Shooting Star)
+    if b1 > 0 and u1 >= 2 * b1 and l1 <= 0.2 * b1: p.append({"n": "শুটিং স্টার &#9732;", "t": "bear"})
+    # ১০. হ্যাঙ্গিং ম্যান (Hanging Man)
+    if b1 > 0 and l1 >= 2 * b1 and u1 <= 0.2 * b1 and not g1: p.append({"n": "হ্যাঙ্গিং ম্যান &#128128;", "t": "bear"})
+    # ১১. পিয়ার্সিং লাইন (Piercing Line)
+    if not g2 and g1 and c1['o'] < c2['l'] and c1['c'] > (c2['o'] + c2['c']) / 2: p.append({"n": "পিয়ার্সিং লাইন &#128200;", "t": "bull"})
+    # ১২. ডার্ক ক্লাউড কভার (Dark Cloud Cover)
+    if g2 and not g1 and c1['o'] > c2['h'] and c1['c'] < (c2['o'] + c2['c']) / 2: p.append({"n": "ডার্ক ক্লাউড কভার &#9729;", "t": "bear"})
+    # ১৩. টুইজার বটম (Tweezer Bottom)
+    if abs(c1['l'] - c2['l']) < (t1 * 0.05) and not g2 and g1: p.append({"n": "টুইজার বটম &#128205;", "t": "bull"})
+    # ১৪. টুইজার টপ (Tweezer Top)
+    if abs(c1['h'] - c2['h']) < (t1 * 0.05) and g2 and not g1: p.append({"n": "টুইজার টপ &#128205;", "t": "bear"})
+    # ১৫. ডোজি (Doji)
+    if b1 <= (t1 * 0.1): p.append({"n": "ডোজি &#9878;", "t": "neut"})
+    # ১৬. স্পিনিং টপ (Spinning Top)
+    if b1 > 0 and b1 < (t1 * 0.3) and u1 > b1 and l1 > b1: p.append({"n": "স্পিনিং টপ &#129352;", "t": "neut"})
+    # ১৭. স্পিনিং বটম (Spinning Bottom)
+    if b1 > 0 and b1 < (t1 * 0.3) and l1 > u1 and l1 > b1: p.append({"n": "স্পিনিং বটম &#129352;", "t": "bull"})
+    
     return p
 
 # --- ট্রেডিং ইঞ্জিন লজিক (সংশোধিত: ফিক্সড টিপি ও ট্রেলিং এসএল) ---
