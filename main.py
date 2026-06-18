@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 
 # ========== ১. সেটিংস ও ডাটা পাথ ==========
 SYMBOL, STATE_FILE, INITIAL_FUND = "SOL/USDT", "bot_state.json", 100.0
-DEF_TP, DEF_SL = 0.007, 0.010
+DEF_TP, DEF_SL = 0.005, 0.010
 exchange = ccxt.bitget({'enableRateLimit': True})
 
 def save_state(d):
