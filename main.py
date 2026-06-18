@@ -67,19 +67,16 @@ def bot_engine():
             l_pnl = ((p/entry_p)-1)*100 if in_pos else 0.0
             l_val = (100.0/entry_p*p)-100.0 if in_pos else 0.0
 
-            # --- ট্রেলিং এসএল আপডেট (টিপি ফিক্সড থাকবে) ---
+            # ট্রেলিং এসএল আপডেট (টিপি ফিক্সড থাকবে)
             if in_pos:
                 if p > peak_p:
                     peak_p = p
-                    # শুধুমাত্র স্টপ লস উপরে উঠবে (Trailing SL)
                     cur.update({"sl_level": round(peak_p * (1 - DEF_SL), 2)})
-                # টিপি লেভেল আর আপডেট হবে না, ফলে সেটি কেনার সময়ের ০.৭% এ স্থির থাকবে
 
             cur.update({"price":round(p,2),"last_update":datetime.now(timezone.utc).strftime("%H:%M:%S"),"in_position":in_pos,"live_pnl_pct":round(l_pnl,2),"live_pnl_val":round(l_val,2),"entry_price":round(entry_p,2),"analysis_1m":{"rsi":round(r1,1),"ema":round(e20,2),"ema50":round(e50,2),"sig":"বুলিশ ✅" if p>e20 else "বেয়ারিশ ❌","pats":get_advanced_pats(df1)},"analysis_3m":{"rsi":round(r3,1),"macd":round(mv,3),"sig":"বুলিশ ✅" if mv>ms else "অপেক্ষা","pats":get_advanced_pats(df3)}})
 
             if not in_pos and p>e20 and r1<65 and mv>ms:
                 entry_p, peak_p, in_pos, total = p, p, True, total+1
-                # এন্ট্রি নেওয়ার সময় একবারে টিপি এবং এসএল সেট করা হচ্ছে
                 cur.update({"trades":total,"balance":0.0,"sl_level":round(p*(1-DEF_SL),2),"tp_level":round(p*(1+DEF_TP),2),"last_action":"BUY"})
                 cur["history"].insert(0,{"t":datetime.now().strftime("%H:%M"),"a":"BUY","p":round(p,2),"r":"---"})
                 cur["log"].insert(0,{"t":datetime.now().strftime("%H:%M"),"m":f"🟢 BUY @ ${p:.2f}"})
@@ -97,6 +94,12 @@ def bot_engine():
         except: pass
         time.sleep(10)
 
+threading.Thread(target=bot_engine, daemon=True).start()
+@app.route('/api/data')
+def api(): return jsonify(load_state())
+@app.route('/')
+def index(): return render_template_string(UI)
+    
 UI = """
 <!DOCTYPE html>
 <html lang="bn">
