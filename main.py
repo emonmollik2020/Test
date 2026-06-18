@@ -137,26 +137,31 @@ UI = """
 <html lang="bn">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro SOL Bot</title><script src="https://cdn.tailwindcss.com"></script>
+    <title>Master SOL Bot</title><script src="https://cdn.tailwindcss.com"></script>
+    <script>setInterval(() => location.reload(), 600000);</script>
     <style>
         body { background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
         .card { background: white; border-radius: 1rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .tag { border: 1px solid #dcfce7; color: #166534; padding: 2px 10px; border-radius: 99px; font-size: 10px; font-weight: 800; display: inline-block; margin: 2px; }
+        .tag-bull { background: #f0fdf4; } .tag-bear { background: #fef2f2; color: #991b1b; border-color: #fee2e2; }
     </style>
 </head>
 <body class="p-3 text-slate-800">
 <div class="max-w-md mx-auto">
     <div class="text-center mb-6"><span class="bg-green-100 text-green-700 px-4 py-1 rounded-lg text-xs font-bold border border-green-200">&#9989; বট চলছে</span></div>
+    
     <div class="grid grid-cols-3 gap-2 mb-2 text-center text-[10px] font-bold text-slate-400 uppercase">
         <div class="card p-3"><p>মোট ট্রেড</p><p id="t" class="text-lg font-black text-slate-800">0</p></div>
         <div class="card p-3"><p>জয়ের হার</p><p id="w" class="text-lg font-black text-slate-800">0%</p></div>
         <div class="card p-3"><p>মোট P&L</p><p id="pnl" class="text-lg font-black text-green-600">+$0.00</p></div>
     </div>
+
     <div class="grid grid-cols-3 gap-2 mb-4 text-center text-[9px] font-bold text-slate-400 uppercase">
         <div class="card p-3"><p>সেরা</p><p id="bt" class="text-xs font-bold text-green-400">--</p></div>
         <div class="card p-3"><p>খারাপ</p><p id="wt" class="text-xs font-bold text-red-400">--</p></div>
         <div class="card p-3"><p>শেষ</p><p id="la" class="text-xs font-bold text-slate-500">---</p></div>
     </div>
+
     <div class="card p-6 mb-4 text-center">
         <div class="flex justify-between items-center mb-4"><span id="pr" class="text-4xl font-black tracking-tighter">$0.00</span><div class="text-right text-[10px] text-slate-400 font-bold">ব্যালেন্স: <b id="bl">$100.00</b></div></div>
         <div id="pnl_display" class="hidden mb-4 p-5 border-2 rounded-3xl text-center bg-white shadow-lg">
@@ -166,10 +171,15 @@ UI = """
         </div>
         <div id="st" class="bg-orange-50 text-orange-600 p-2.5 rounded-xl text-[11px] font-bold border border-orange-100 text-center uppercase tracking-wide italic">&#8987; লোড হচ্ছে...</div>
     </div>
-    <div class="card p-4 mb-4 text-[11px]"><div class="flex justify-between mb-3 items-center"><h3 class="font-bold text-slate-700 text-xs">&#128202; 1 মিনিট বিশ্লেষণ</h3><span id="s1" class="font-bold px-2 py-0.5 rounded bg-slate-100">WAIT</span></div><div class="grid grid-cols-2 text-slate-500 font-medium"><span>RSI: <b id="r1">0</b></span><span>EMA 20: <b id="e1">0</b></span></div><div id="pats1" class="mt-3 flex flex-wrap"></div></div>
-    <div class="card p-4 mb-4 text-[11px]"><div class="flex justify-between mb-3 items-center"><h3 class="font-bold text-slate-700 text-xs">&#128202; 3 মিনিট বিশ্লেষণ</h3><span id="s3" class="font-bold px-2 py-0.5 rounded bg-slate-100">WAIT</span></div><div class="grid grid-cols-2 text-slate-500 font-medium"><span>RSI: <b id="r3">0</b></span><span>MACD: <b id="m3">0</b></span></div><div id="pats3" class="mt-3 flex flex-wrap"></div></div>
+
+    <div class="card p-4 mb-4 text-[11px]"><div class="flex justify-between mb-3 items-center"><h3 class="font-bold text-slate-700 text-xs">&#128202; 1 মিনিট বিশ্লেষণ</h3><span id="s1" class="font-bold px-2 py-0.5 rounded bg-slate-100 text-[10px]">WAIT</span></div><div class="grid grid-cols-2 text-slate-500 font-medium"><span>RSI: <b id="r1">0</b></span><span>EMA 20: <b id="e1">0</b></span></div><div id="pats1" class="mt-3 flex flex-wrap gap-1"></div></div>
+    
+    <div class="card p-4 mb-4 text-[11px]"><div class="flex justify-between mb-3 items-center"><h3 class="font-bold text-slate-700 text-xs">&#128202; 3 মিনিট বিশ্লেষণ</h3><span id="s3" class="font-bold px-2 py-0.5 rounded bg-slate-100 text-[10px]">WAIT</span></div><div class="grid grid-cols-2 text-slate-500 font-medium"><span>RSI: <b id="r3">0</b></span><span>MACD: <b id="m3">0</b></span></div><div id="pats3" class="mt-3 flex flex-wrap gap-1"></div></div>
+
     <div class="card overflow-hidden h-60 mb-4 border border-slate-100 shadow-inner"><iframe src="https://s.tradingview.com/widgetembed/?symbol=BITGET%3ASOLUSDT&interval=1&theme=light" width="100%" height="100%" frameborder="0"></iframe></div>
-    <div class="card p-4 mb-4 overflow-hidden"><h3 class="font-bold text-slate-700 text-xs mb-3 uppercase tracking-wider">&#128203; ট্রেড হিস্ট্রি</h3><div class="overflow-x-auto"><table class="w-full text-[10px] text-left"><thead class="text-slate-400 border-b"><tr><th class="pb-2">সময়</th><th class="pb-2">ধরন</th><th class="pb-2 text-right">মূল্য</th><th class="pb-2 text-right">P&L</th></tr></thead><tbody id="hb" class="divide-y divide-slate-50"></tbody></table></div></div>
+    
+    <div class="card p-4 mb-4 overflow-hidden"><h3 class="font-black text-slate-700 text-[10px] mb-3 uppercase tracking-wider">&#128203; ট্রেড হিস্ট্রি</h3><div class="overflow-x-auto"><table class="w-full text-[10px] text-left"><thead class="text-slate-400 border-b"><tr><th class="pb-2">সময়</th><th class="pb-2 text-center">ধরন</th><th class="pb-2 text-right">মূল্য</th><th class="pb-2 text-right">P&L</th></tr></thead><tbody id="hb" class="divide-y divide-slate-50"></tbody></table></div></div>
+    
     <div class="card p-4 mb-6"><h3 class="font-bold text-slate-700 text-xs mb-2 uppercase tracking-widest">&#128214; লাইভ লগ</h3><div id="lg" class="space-y-1 text-[10px]"></div></div>
 </div>
 <script>
@@ -181,22 +191,31 @@ UI = """
                 document.getElementById('t').innerText = d.trades; document.getElementById('w').innerText = d.win_rate + '%';
                 document.getElementById('pnl').innerText = (d.total_pnl >= 0 ? '+$' : '$') + d.total_pnl.toFixed(2);
                 document.getElementById('bt').innerText = '$' + d.best.toFixed(2); document.getElementById('wt').innerText = '$' + d.worst.toFixed(2);
-                document.getElementById('la').innerText = d.last_action; document.getElementById('st').innerText = d.wait_reason.toUpperCase();
+                document.getElementById('la').innerText = d.last_action; document.getElementById('st').innerText = '⌛ ' + d.wait_reason;
                 if(d.in_position) {
                     const disp = document.getElementById('pnl_display'); disp.classList.remove('hidden');
                     document.getElementById('lp').innerText = (d.live_pnl_pct >= 0 ? '+' : '') + d.live_pnl_pct + '%';
                     document.getElementById('sl').innerText = d.sl_level; document.getElementById('tp').innerText = d.tp_level;
-                    document.getElementById('lp').className = 'text-4xl font-black ' + (d.live_pnl_pct >= 0 ? 'text-green-600' : 'text-red-500');
+                    const col = d.live_pnl_pct >= 0 ? 'text-green-600' : 'text-red-600';
+                    document.getElementById('lp').className = 'text-4xl font-black ' + col;
                     disp.className = 'mb-4 p-5 border-2 rounded-3xl text-center bg-white shadow-lg ' + (d.live_pnl_pct >= 0 ? 'border-green-100' : 'border-red-100');
                 } else { document.getElementById('pnl_display').classList.add('hidden'); }
+                
                 document.getElementById('r1').innerText = d.analysis_1m.rsi; document.getElementById('e1').innerText = '$' + d.analysis_1m.ema;
                 const s1 = document.getElementById('s1'); s1.innerText = d.analysis_1m.sig;
                 s1.className = 'font-bold px-2 py-0.5 rounded ' + (d.analysis_1m.sig.includes('বুলিশ')?'bg-green-50 text-green-600':'bg-red-50 text-red-400');
+                
                 document.getElementById('r3').innerText = d.analysis_3m.rsi; document.getElementById('m3').innerText = d.analysis_3m.macd;
                 const s3 = document.getElementById('s3'); s3.innerText = d.analysis_3m.sig;
                 s3.className = 'font-bold px-2 py-0.5 rounded ' + (d.analysis_3m.sig.includes('বুলিশ')?'bg-green-50 text-green-600':'bg-slate-50 text-slate-400');
-                document.getElementById('pats1').innerHTML = d.analysis_1m.pats.map(p => `<span class="tag">${p.n}</span>`).join('');
-                document.getElementById('pats3').innerHTML = d.analysis_3m.pats.map(p => `<span class="tag">${p.n}</span>`).join('');
+
+                // প্যাটার্ন ডিসপ্লে আপডেট লজিক
+                const tag = (p) => `<span class="tag ${p.t==='bull'?'tag-bull':'tag-bear'}">${p.n}</span>`;
+                const no_pat = '<p class="text-gray-400 italic text-[10px]">কোনো ক্যান্ডেলস্টিক প্যাটার্ন নেই</p>';
+                
+                document.getElementById('pats1').innerHTML = d.analysis_1m.pats.length > 0 ? d.analysis_1m.pats.map(tag).join('') : no_pat;
+                document.getElementById('pats3').innerHTML = d.analysis_3m.pats.length > 0 ? d.analysis_3m.pats.map(tag).join('') : no_pat;
+
                 document.getElementById('hb').innerHTML = d.history.slice(0,5).map(h => `<tr class="border-b border-slate-50"><td class="py-2 text-slate-400 font-bold">${h.t}</td><td class="font-black ${h.a=='BUY'?'text-blue-500':'text-orange-500'}">${h.a}</td><td class="text-right font-black">$${h.p}</td><td class="text-right font-black ${h.r.includes('-')?'text-red-400':'text-green-500'}">${h.r}</td></tr>`).join('');
                 document.getElementById('lg').innerHTML = d.log.slice(0,3).map(l => `<div class="flex justify-between text-slate-500 pb-1"><span>${l.t}</span><span>${l.m}</span></div>`).join('');
             }
