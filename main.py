@@ -50,7 +50,7 @@ def get_advanced_pats(df):
     if b1 < (t1*0.3) and u1 > b1 and l1 > b1: p.append({"n": "স্পিনিং টপ &#129352;", "t": "neut"})
     return p
 
-# --- ট্রেডিং ইঞ্জিন লজিক ---
+# --- ট্রেডিং ইঞ্জিন লজিক (সংশোধিত: ফিক্সড টিপি ও ট্রেলিং এসএল) ---
 def bot_engine():
     wins, total, net_pnl, pnl_hist, in_pos, entry_p, peak_p = 0, 0, 0.0, [0], False, 0.0, 0.0
     while True:
@@ -59,17 +59,27 @@ def bot_engine():
             df1, df3 = pd.DataFrame(bars1, columns=['t','o','h','l','c','v']), pd.DataFrame(bars3, columns=['t','o','h','l','c','v'])
             p = df1['c'].iloc[-1]
             r1, e20 = ta.momentum.rsi(df1['c']).iloc[-1], ta.trend.ema_indicator(df1['c'], 20).iloc[-1]
+            e50 = ta.trend.ema_indicator(df1['c'], 50).iloc[-1]
             r3, m_obj = ta.momentum.rsi(df3['c']).iloc[-1], ta.trend.MACD(df3['c'])
             mv, ms = m_obj.macd().iloc[-1], m_obj.macd_signal().iloc[-1]
+            
             cur = load_state()
             l_pnl = ((p/entry_p)-1)*100 if in_pos else 0.0
             l_val = (100.0/entry_p*p)-100.0 if in_pos else 0.0
-            if in_pos and p > peak_p:
-                peak_p = p
-                cur.update({"sl_level": round(p*(1-DEF_SL),2), "tp_level": round(p*(1+DEF_TP),2)})
-            cur.update({"price":round(p,2),"last_update":datetime.now(timezone.utc).strftime("%H:%M:%S"),"in_position":in_pos,"live_pnl_pct":round(l_pnl,2),"live_pnl_val":round(l_val,2),"entry_price":round(entry_p,2),"analysis_1m":{"rsi":round(r1,1),"ema":round(e20,2),"sig":"বুলিশ ✅" if p>e20 else "বেয়ারিশ ❌","pats":get_advanced_pats(df1)},"analysis_3m":{"rsi":round(r3,1),"macd":round(mv,3),"sig":"বুলিশ ✅" if mv>ms else "অপেক্ষা","pats":get_advanced_pats(df3)}})
+
+            # --- ট্রেলিং এসএল আপডেট (টিপি ফিক্সড থাকবে) ---
+            if in_pos:
+                if p > peak_p:
+                    peak_p = p
+                    # শুধুমাত্র স্টপ লস উপরে উঠবে (Trailing SL)
+                    cur.update({"sl_level": round(peak_p * (1 - DEF_SL), 2)})
+                # টিপি লেভেল আর আপডেট হবে না, ফলে সেটি কেনার সময়ের ০.৭% এ স্থির থাকবে
+
+            cur.update({"price":round(p,2),"last_update":datetime.now(timezone.utc).strftime("%H:%M:%S"),"in_position":in_pos,"live_pnl_pct":round(l_pnl,2),"live_pnl_val":round(l_val,2),"entry_price":round(entry_p,2),"analysis_1m":{"rsi":round(r1,1),"ema":round(e20,2),"ema50":round(e50,2),"sig":"বুলিশ ✅" if p>e20 else "বেয়ারিশ ❌","pats":get_advanced_pats(df1)},"analysis_3m":{"rsi":round(r3,1),"macd":round(mv,3),"sig":"বুলিশ ✅" if mv>ms else "অপেক্ষা","pats":get_advanced_pats(df3)}})
+
             if not in_pos and p>e20 and r1<65 and mv>ms:
                 entry_p, peak_p, in_pos, total = p, p, True, total+1
+                # এন্ট্রি নেওয়ার সময় একবারে টিপি এবং এসএল সেট করা হচ্ছে
                 cur.update({"trades":total,"balance":0.0,"sl_level":round(p*(1-DEF_SL),2),"tp_level":round(p*(1+DEF_TP),2),"last_action":"BUY"})
                 cur["history"].insert(0,{"t":datetime.now().strftime("%H:%M"),"a":"BUY","p":round(p,2),"r":"---"})
                 cur["log"].insert(0,{"t":datetime.now().strftime("%H:%M"),"m":f"🟢 BUY @ ${p:.2f}"})
@@ -81,16 +91,11 @@ def bot_engine():
                 cur.update({"balance":round(100.0+net_pnl,2),"total_pnl":round(net_pnl,2),"win_rate":round((wins/total)*100,1),"best":round(max(pnl_hist),2),"worst":round(min(pnl_hist),2),"last_action":"SELL"})
                 cur["history"].insert(0,{"t":datetime.now().strftime("%H:%M"),"a":"SELL","p":round(p,2),"r":f"{round(l_pnl,2)}%"})
                 cur["log"].insert(0,{"t":datetime.now().strftime("%H:%M"),"m":f"🔴 SELL @ ${p:.2f}"})
+            
             cur["wait_reason"] = "ট্রেড লাইভ আছে" if in_pos else ("১মি ট্রেন্ড দুর্বল" if p<=e20 else "এন্ট্রি খুঁজছে...")
             save_state(cur)
         except: pass
         time.sleep(10)
-
-threading.Thread(target=bot_engine, daemon=True).start()
-@app.route('/api/data')
-def api(): return jsonify(load_state())
-@app.route('/')
-def index(): return render_template_string(UI)
 
 UI = """
 <!DOCTYPE html>
