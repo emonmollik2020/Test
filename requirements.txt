@@ -3,3 +3,5 @@ pandas
 ta
 flask
 gunicorn
+sqlalchemy
+psycopg2-binary
