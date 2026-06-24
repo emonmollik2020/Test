@@ -1093,7 +1093,7 @@ UI = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master SOL Bot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
     <script>setInterval(() => location.reload(), 600000);</script>
     <style>
         body { background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
